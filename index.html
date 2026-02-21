@@ -3,164 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Koda - Server Hub</title>
+    <title>Koda - Tactical Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0f0f0f; --card: #1a1a1a; --accent: #ff8c00; }
-        body { background: var(--bg); color: #efefef; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --bg: #0d0e10; --panel: #16171d; --accent: #ff8c00; --online: #00ff41; }
         
-        /* Botones de categorías (los iconos de los juegos) */
-        .category-btn img { border: 2px solid transparent; transition: all 0.2s; width: 85px; height: 120px; object-fit: cover; border-radius: 12px; }
-        .category-btn.active img { border-color: var(--accent); transform: scale(1.05); filter: brightness(1.1); }
-        .category-btn.active p { color: var(--accent); font-weight: bold; }
-        
-        /* Tarjetas de los servidores */
-        .glass-card { background: var(--card); border: 1px solid #333; border-radius: 14px; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        
-        /* Esconder el scroll lateral */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { 
+            background-color: var(--bg); 
+            background-image: radial-gradient(#1a1c22 0.5px, transparent 0.5px);
+            background-size: 15px 15px; /* Efecto de puntos de fondo */
+            color: #efefef; 
+            font-family: 'JetBrains Mono', monospace; 
+        }
+
+        /* Estética de las pestañas (Iconos) */
+        .category-btn img { 
+            border: 1px solid #333; 
+            filter: grayscale(1) opacity(0.5); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 80px; height: 110px; object-fit: cover; border-radius: 8px;
+        }
+        .category-btn.active img { 
+            filter: grayscale(0) opacity(1); 
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* Tarjeta estilo HUD Militar */
+        .server-card {
+            background: var(--panel);
+            border: 1px solid #2a2c33;
+            border-left: 5px solid #333; /* Borde grueso lateral */
+            position: relative;
+            overflow: hidden;
+        }
+        .server-card.online { border-left-color: var(--online); }
+        .server-card.offline { border-left-color: #ff3e3e; }
+
+        /* Efecto de brillo en el nombre del mapa */
+        .map-badge {
+            background: rgba(0,0,0,0.4);
+            color: var(--accent);
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            text-transform: uppercase;
+        }
+
+        /* Botón estilo táctico */
+        .btn-copy {
+            background: #212329;
+            border: 1px solid #3a3d46;
+            color: #aaa;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        .btn-copy:active { background: var(--accent); color: white; }
+
+        /* Títulos estilo Valve */
+        .valve-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
     </style>
 </head>
-<body class="p-6">
+<body class="p-5">
 
-    <header class="mb-6">
-        <h1 class="text-3xl font-black tracking-tighter text-white">KODA</h1>
-        <p class="text-[10px] uppercase tracking-[0.2em] text-orange-500 font-bold">Server Hub</p>
+    <header class="mb-6 flex justify-between items-end">
+        <div>
+            <h1 class="text-4xl font-black valve-title text-white italic">KODA</h1>
+            <div class="h-1 w-12 bg-orange-600"></div>
+        </div>
+        <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">System v2.0 // Active</p>
     </header>
 
     <section class="flex gap-4 overflow-x-auto pb-6 no-scrollbar">
         <div onclick="setFilter('cs16')" class="category-btn active text-center flex-shrink-0" id="btn-cs16">
             <img src="assets/cs16.png">
-            <p class="text-[9px] mt-2 uppercase tracking-widest">CS 1.6</p>
+            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS 1.6</p>
         </div>
         <div onclick="setFilter('csgo')" class="category-btn text-center flex-shrink-0" id="btn-csgo">
             <img src="assets/csgo.png">
-            <p class="text-[9px] mt-2 uppercase tracking-widest">CS:GO</p>
+            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS:GO</p>
         </div>
         <div onclick="setFilter('hl')" class="category-btn text-center flex-shrink-0" id="btn-hl">
             <img src="assets/hl.jpg">
-            <p class="text-[9px] mt-2 uppercase tracking-widest">Half-Life</p>
+            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">HL</p>
         </div>
         <div onclick="setFilter('tf2')" class="category-btn text-center flex-shrink-0" id="btn-tf2">
             <img src="assets/tf2.png">
-            <p class="text-[9px] mt-2 uppercase tracking-widest">TF 2</p>
+            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">TF 2</p>
         </div>
     </section>
 
-    <section class="mb-8 space-y-3">
-        <input type="text" id="ip-input" placeholder="IP:PUERTO" 
-            class="w-full p-4 rounded-xl bg-[#151515] border border-[#333] focus:border-orange-500 outline-none mono text-sm text-white text-center">
+    <section class="mb-8">
+        <div class="relative">
+            <input type="text" id="ip-input" placeholder="INGRESE IP PROTOCOL" 
+                class="w-full p-4 pl-10 rounded-lg bg-[#111216] border border-[#2a2c33] focus:border-orange-500 outline-none text-sm text-orange-500 font-bold placeholder:text-gray-700">
+            <div class="absolute left-3 top-4 text-gray-700 italic">>></div>
+        </div>
         <button onclick="addServer()" 
-            class="w-full py-4 bg-orange-600 active:bg-orange-800 text-white font-bold rounded-xl uppercase text-xs tracking-widest shadow-lg shadow-orange-900/40">
-            Añadir Servidor
+            class="w-full mt-2 py-3 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-lg uppercase text-[11px] tracking-tighter">
+            Confirmar Enlace de Servidor
         </button>
     </section>
 
-    <h2 id="list-title" class="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4">Servidores CS 1.6</h2>
+    <h2 id="list-title" class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 border-b border-gray-800 pb-2">Nodos de Red Detectados</h2>
     
-    <div id="server-list" class="space-y-3"></div>
+    <div id="server-list" class="space-y-4"></div>
 
     <script>
         let currentFilter = 'cs16';
         const API_BASE = "https://api.gamedig.app/query";
 
-        // Cargar al inicio
         document.addEventListener('DOMContentLoaded', refreshAll);
 
-        // Cambiar filtro al tocar icono
         function setFilter(game) {
             currentFilter = game;
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + game).classList.add('active');
-            document.getElementById('list-title').innerText = "Servidores " + game.toUpperCase();
             refreshAll();
         }
 
-        // Guardar servidor
         async function addServer() {
             const input = document.getElementById('ip-input');
             const ip = input.value.trim();
             if(!ip) return;
-
-            let servers = JSON.parse(localStorage.getItem('koda_nodes_v3') || '[]');
+            let servers = JSON.parse(localStorage.getItem('koda_nodes_v4') || '[]');
             if(!servers.find(s => s.ip === ip)) {
                 servers.push({ ip: ip, game: currentFilter });
-                localStorage.setItem('koda_nodes_v3', JSON.stringify(servers));
+                localStorage.setItem('koda_nodes_v4', JSON.stringify(servers));
             }
             input.value = '';
             refreshAll();
         }
 
-        // Actualizar la lista visual
         async function refreshAll() {
             const container = document.getElementById('server-list');
-            const allServers = JSON.parse(localStorage.getItem('koda_nodes_v3') || '[]');
+            const allServers = JSON.parse(localStorage.getItem('koda_nodes_v4') || '[]');
             const filtered = allServers.filter(s => s.game === currentFilter);
-
             container.innerHTML = '';
             if(filtered.length === 0) {
-                container.innerHTML = '<p class="text-gray-700 text-center text-[10px] mt-10 uppercase tracking-widest">No hay servidores aquí</p>';
+                container.innerHTML = '<p class="text-gray-800 text-center text-[10px] py-10">SIN CONEXIONES ESTABLECIDAS</p>';
                 return;
             }
-
             filtered.forEach(s => renderServerCard(s.ip));
         }
 
-        // Renderizar cada tarjeta
         async function renderServerCard(ipPort) {
             const container = document.getElementById('server-list');
             const [host, port] = ipPort.split(':');
             const card = document.createElement('div');
-            card.className = 'glass-card p-4 flex items-center justify-between gap-3';
+            card.className = 'server-card p-4 rounded-r-lg flex items-center justify-between';
             container.appendChild(card);
 
             try {
-                // Consultamos a la API pública
                 const res = await fetch(`${API_BASE}?type=cs16&host=${host}&port=${port || 27015}`);
                 const data = await res.json();
-                
                 if(data.error) throw new Error();
 
+                card.classList.add('online');
                 card.innerHTML = `
-                    <div class="flex flex-col overflow-hidden">
-                        <span class="text-[9px] font-bold text-orange-500 uppercase">${data.map}</span>
-                        <span class="text-sm font-bold text-white truncate max-w-[140px] leading-tight">${data.name}</span>
-                        <span class="text-[10px] text-gray-500 mono">${data.players.length}/${data.maxplayers} • ${data.ping}ms</span>
+                    <div class="flex flex-col gap-1 overflow-hidden">
+                        <div class="flex items-center gap-2">
+                            <span class="map-badge">${data.map}</span>
+                            <span class="text-[10px] text-green-500 font-bold">${data.ping}ms</span>
+                        </div>
+                        <span class="text-sm font-bold text-white truncate leading-tight">${data.name}</span>
+                        <div class="flex items-center gap-2 text-[9px] text-gray-500 font-bold">
+                            <span>${ipPort}</span>
+                            <span class="text-gray-700">•</span>
+                            <span>${data.players.length}/${data.maxplayers} USERS</span>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="copyIP('${ipPort}', this)" class="bg-[#2a2a2a] px-3 py-2 rounded-lg text-[9px] font-black text-gray-300 active:bg-orange-600 transition-all uppercase">Copy IP</button>
-                        <button onclick="removeServer('${ipPort}')" class="text-gray-700 font-bold p-1">✕</button>
+                        <button onclick="copyIP('${ipPort}', this)" class="btn-copy px-3 py-2 rounded">COPY</button>
+                        <button onclick="removeServer('${ipPort}')" class="text-gray-800 p-2">✕</button>
                     </div>
                 `;
             } catch (e) {
+                card.classList.add('offline');
                 card.innerHTML = `
-                    <div class="flex flex-col"><span class="text-[9px] text-red-900 font-bold uppercase">Offline</span><span class="text-xs text-gray-600 mono">${ipPort}</span></div>
-                    <button onclick="removeServer('${ipPort}')" class="text-gray-700">✕</button>
+                    <div class="flex flex-col"><span class="text-[10px] text-red-700 font-bold">SIGNAL LOST</span><span class="text-xs text-gray-600 font-bold">${ipPort}</span></div>
+                    <button onclick="removeServer('${ipPort}')" class="text-gray-800">✕</button>
                 `;
             }
         }
 
-        // Función de copiado
         function copyIP(text, btn) {
-            const el = document.createElement('textarea');
-            el.value = text;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            
-            btn.innerText = "COPIED!";
-            setTimeout(() => { btn.innerText = "COPY IP"; }, 1500);
+            navigator.clipboard.writeText(text);
+            const oldText = btn.innerText;
+            btn.innerText = "COPIED";
+            btn.style.background = "#ff8c00";
+            btn.style.color = "white";
+            setTimeout(() => { btn.innerText = oldText; btn.style.background = ""; btn.style.color = ""; }, 1500);
         }
 
-        // Eliminar
         function removeServer(ip) {
-            let servers = JSON.parse(localStorage.getItem('koda_nodes_v3') || '[]');
+            let servers = JSON.parse(localStorage.getItem('koda_nodes_v4') || '[]');
             servers = servers.filter(s => s.ip !== ip);
-            localStorage.setItem('koda_nodes_v3', JSON.stringify(servers));
+            localStorage.setItem('koda_nodes_v4', JSON.stringify(servers));
             refreshAll();
         }
     </script>
