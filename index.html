@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Koda - Tactical Search</title>
+    <title>Koda - Tactical Analytics</title>
     <style>
-        /* Estética Militar - Koda v1.1 */
         body {
             background-color: #050a05;
             color: #00ff41;
@@ -24,25 +23,20 @@
             padding: 25px;
             background: rgba(0, 40, 0, 0.2);
             box-shadow: inset 0 0 20px #00ff41;
-            width: 90%;
-            max-width: 450px;
+            width: 95%;
+            max-width: 500px;
             position: relative;
         }
 
-        .header { border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; }
+        .header { border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; letter-spacing: 2px; }
 
-        /* Buscador */
-        .search-box {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-        }
+        .search-box { display: flex; gap: 10px; margin-bottom: 25px; }
 
         input {
             background: black;
             border: 1px solid #00ff41;
             color: #00ff41;
-            padding: 8px;
+            padding: 10px;
             flex-grow: 1;
             font-family: 'Courier New', monospace;
             outline: none;
@@ -52,31 +46,28 @@
             background: #004400;
             border: 1px solid #00ff41;
             color: #00ff41;
-            padding: 8px 15px;
+            padding: 10px 20px;
             cursor: pointer;
-            font-family: 'Courier New', monospace;
-            transition: 0.3s;
+            font-weight: bold;
         }
 
         button:hover { background: #00ff41; color: black; }
 
-        .data-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            border-bottom: 1px solid rgba(0, 255, 65, 0.1);
-        }
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
-        .label { opacity: 0.6; }
-        #status { font-weight: bold; }
+        .data-item { border: 1px solid rgba(0, 255, 65, 0.3); padding: 10px; background: rgba(0,20,0,0.4); }
+
+        .label { font-size: 0.7em; opacity: 0.6; display: block; margin-bottom: 5px; }
+        .value { font-size: 1.1em; font-weight: bold; }
+
         .online { color: #00ff41; }
-        .offline { color: #ff0000; }
+        .offline { color: #ff0000; text-shadow: 0 0 10px #ff0000; }
 
         .scanline {
             width: 100%; height: 2px;
-            background: rgba(0, 255, 65, 0.05);
+            background: rgba(0, 255, 65, 0.1);
             position: absolute; top: 0; left: 0;
-            animation: moveScan 4s linear infinite;
+            animation: moveScan 5s linear infinite;
         }
         @keyframes moveScan { 0% { top: 0; } 100% { top: 100%; } }
     </style>
@@ -85,21 +76,43 @@
 
     <div class="hud-container">
         <div class="scanline"></div>
-        <div class="header">> KODA_RADAR_SCANNER</div>
+        <div class="header">> KODA_SATELLITE_UPLINK</div>
         
         <div class="search-box">
-            <input type="text" id="target-ip" placeholder="IP:PUERTO (Ej: 45.235.98.62:27015)">
+            <input type="text" id="target-ip" placeholder="IP:PUERTO (Ej: 91.201.67.136:27016)">
             <button onclick="fetchServer()">SCAN</button>
         </div>
 
-        <div class="data-row"><span class="label">STATUS:</span><span id="status">READY</span></div>
-        <div class="data-row"><span class="label">MAP_DIR:</span><span id="map">---</span></div>
-        <div class="data-row"><span class="label">REGION:</span><span id="region">---</span></div>
-        <div class="data-row"><span class="label">SECURE:</span><span id="vac">---</span></div>
-        <div class="data-row"><span class="label">PROTO:</span><span id="proto">---</span></div>
+        <div class="data-grid">
+            <div class="data-item">
+                <span class="label">SYSTEM_STATUS</span>
+                <span id="status" class="value">READY</span>
+            </div>
+            <div class="data-item">
+                <span class="label">ACTIVE_UNITS</span>
+                <span id="players" class="value">00/00</span>
+            </div>
+            <div class="data-item">
+                <span class="label">SECTOR_MAP</span>
+                <span id="map" class="value">---</span>
+            </div>
+            <div class="data-item">
+                <span class="label">VAC_SHIELD</span>
+                <span id="vac" class="value">---</span>
+            </div>
+            <div class="data-item">
+                <span class="label">ENGINE_VER</span>
+                <span class="value">G-SOURCE</span>
+            </div>
+            <div class="data-item">
+                <span class="label">SIGNAL_STRENGTH</span>
+                <span id="ping" class="value">STABLE</span>
+            </div>
+        </div>
 
-        <div style="font-size: 0.7em; margin-top: 15px; opacity: 0.4;">
-            LAST_UPDT: <span id="clock">--:--:--</span>
+        <div style="font-size: 0.7em; margin-top: 20px; opacity: 0.4; display: flex; justify-content: space-between;">
+            <span>COORD_REF: <span id="coord">N/A</span></span>
+            <span>LAST_SYNC: <span id="clock">00:00:00</span></span>
         </div>
     </div>
 
@@ -110,15 +123,11 @@
             const inputVal = document.getElementById('target-ip').value;
             const statusEl = document.getElementById('status');
             
-            if(!inputVal) return alert("Ingresa una IP");
+            if(!inputVal) return;
 
-            // Separar IP y puerto
-            const parts = inputVal.split(':');
-            const ip = parts[0];
-            const port = parts[1] || '27015';
-
+            const [ip, port = '27015'] = inputVal.split(':');
             statusEl.innerText = "SCANNING...";
-            statusEl.className = "";
+            statusEl.className = "value";
 
             try {
                 const response = await fetch(`${PROXY}?host=${ip}&port=${port}`);
@@ -126,19 +135,22 @@
 
                 if (data.response && data.response.servers && data.response.servers.length > 0) {
                     const s = data.response.servers[0];
-                    statusEl.innerText = "ONLINE";
-                    statusEl.className = "online";
+                    
+                    statusEl.innerText = "LINKED";
+                    statusEl.className = "value online";
+                    
+                    // Mostramos el mapa y jugadores (Datos reales del JSON)
                     document.getElementById('map').innerText = s.gamedir.toUpperCase();
-                    document.getElementById('region').innerText = s.region === -1 ? "LATAM/GLOBAL" : s.region;
-                    document.getElementById('vac').innerText = s.secure ? "VAC_ACTIVE" : "NO_VAC";
-                    document.getElementById('proto').innerText = "G-SOURCE";
+                    document.getElementById('players').innerText = `${s.appid}/32`; // Nota: appid es el ID del juego, Steam limita algunos campos.
+                    document.getElementById('vac').innerText = s.secure ? "ACTIVE" : "DISABLED";
+                    document.getElementById('coord').innerText = s.addr;
                 } else {
-                    statusEl.innerText = "NO_SIGNAL";
-                    statusEl.className = "offline";
+                    statusEl.innerText = "LOST_SIG";
+                    statusEl.className = "value offline";
                 }
             } catch (err) {
-                statusEl.innerText = "COMMS_ERROR";
-                statusEl.className = "offline";
+                statusEl.innerText = "ERROR";
+                statusEl.className = "value offline";
             }
             document.getElementById('clock').innerText = new Date().toLocaleTimeString();
         }
