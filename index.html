@@ -2,211 +2,128 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Koda - Tactical Hub</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koda - Tactical HUD</title>
     <style>
-        :root { --bg: #0d0e10; --panel: #16171d; --accent: #ff8c00; --online: #00ff41; }
-        
-        body { 
-            background-color: var(--bg); 
-            background-image: radial-gradient(#1a1c22 0.5px, transparent 0.5px);
-            background-size: 15px 15px; /* Efecto de puntos de fondo */
-            color: #efefef; 
-            font-family: 'JetBrains Mono', monospace; 
+        /* Estilo Militar Base */
+        body {
+            background-color: #050a05;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-shadow: 0 0 5px #00ff41;
         }
 
-        /* Estética de las pestañas (Iconos) */
-        .category-btn img { 
-            border: 1px solid #333; 
-            filter: grayscale(1) opacity(0.5); 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 80px; height: 110px; object-fit: cover; border-radius: 8px;
-        }
-        .category-btn.active img { 
-            filter: grayscale(0) opacity(1); 
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
-            transform: translateY(-5px);
+        .hud-container {
+            border: 2px solid #00ff41;
+            padding: 20px;
+            background: rgba(0, 40, 0, 0.2);
+            box-shadow: inset 0 0 15px #00ff41;
+            width: 80%;
+            max-width: 600px;
         }
 
-        /* Tarjeta estilo HUD Militar */
-        .server-card {
-            background: var(--panel);
-            border: 1px solid #2a2c33;
-            border-left: 5px solid #333; /* Borde grueso lateral */
-            position: relative;
-            overflow: hidden;
-        }
-        .server-card.online { border-left-color: var(--online); }
-        .server-card.offline { border-left-color: #ff3e3e; }
+        .status-online { color: #00ff41; font-weight: bold; }
+        .status-offline { color: #ff0000; text-shadow: 0 0 5px #ff0000; }
 
-        /* Efecto de brillo en el nombre del mapa */
-        .map-badge {
-            background: rgba(0,0,0,0.4);
-            color: var(--accent);
-            padding: 2px 8px;
-            font-size: 10px;
-            font-weight: bold;
-            border: 1px solid rgba(255, 140, 0, 0.2);
-            text-transform: uppercase;
+        .data-row {
+            margin: 10px 0;
+            border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
+            display: flex;
+            justify-content: space-between;
         }
 
-        /* Botón estilo táctico */
-        .btn-copy {
-            background: #212329;
-            border: 1px solid #3a3d46;
-            color: #aaa;
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            transition: all 0.2s;
+        .glitch { animation: scan 2s infinite; }
+        @keyframes scan {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
-        .btn-copy:active { background: var(--accent); color: white; }
-
-        /* Títulos estilo Valve */
-        .valve-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
     </style>
 </head>
-<body class="p-5">
+<body>
 
-    <header class="mb-6 flex justify-between items-end">
-        <div>
-            <h1 class="text-4xl font-black valve-title text-white italic">KODA</h1>
-            <div class="h-1 w-12 bg-orange-600"></div>
+    <div class="hud-container">
+        <h2 class="glitch">SYSTEM: KODA_TACTICAL_MONITOR v1.0</h2>
+        <hr>
+        
+        <div class="data-row">
+            <span>TARGET_IP:</span>
+            <span id="display-ip">45.235.98.62:27015</span>
         </div>
-        <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">System v2.0 // Active</p>
-    </header>
 
-    <section class="flex gap-4 overflow-x-auto pb-6 no-scrollbar">
-        <div onclick="setFilter('cs16')" class="category-btn active text-center flex-shrink-0" id="btn-cs16">
-            <img src="assets/cs16.png">
-            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS 1.6</p>
+        <div class="data-row">
+            <span>STATUS:</span>
+            <span id="server-status">CONNECTING...</span>
         </div>
-        <div onclick="setFilter('csgo')" class="category-btn text-center flex-shrink-0" id="btn-csgo">
-            <img src="assets/csgo.png">
-            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS:GO</p>
-        </div>
-        <div onclick="setFilter('hl')" class="category-btn text-center flex-shrink-0" id="btn-hl">
-            <img src="assets/hl.jpg">
-            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">HL</p>
-        </div>
-        <div onclick="setFilter('tf2')" class="category-btn text-center flex-shrink-0" id="btn-tf2">
-            <img src="assets/tf2.png">
-            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">TF 2</p>
-        </div>
-    </section>
 
-    <section class="mb-8">
-        <div class="relative">
-            <input type="text" id="ip-input" placeholder="INGRESE IP PROTOCOL" 
-                class="w-full p-4 pl-10 rounded-lg bg-[#111216] border border-[#2a2c33] focus:border-orange-500 outline-none text-sm text-orange-500 font-bold placeholder:text-gray-700">
-            <div class="absolute left-3 top-4 text-gray-700 italic">>></div>
+        <div class="data-row">
+            <span>SERVER_ID:</span>
+            <span id="server-id">---</span>
         </div>
-        <button onclick="addServer()" 
-            class="w-full mt-2 py-3 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-lg uppercase text-[11px] tracking-tighter">
-            Confirmar Enlace de Servidor
-        </button>
-    </section>
 
-    <h2 id="list-title" class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 border-b border-gray-800 pb-2">Nodos de Red Detectados</h2>
-    
-    <div id="server-list" class="space-y-4"></div>
+        <div class="data-row">
+            <span>REGION:</span>
+            <span id="server-region">UNKNOWN</span>
+        </div>
+
+        <div class="data-row">
+            <span>PROTOCOL:</span>
+            <span id="server-protocol">GOLD-SOURCE</span>
+        </div>
+
+        <br>
+        <small style="opacity: 0.5;">LAST_SCAN: <span id="last-update">--:--:--</span></small>
+    </div>
 
     <script>
-        let currentFilter = 'cs16';
-        const API_BASE = "https://api.gamedig.app/query";
+        // CONFIGURACIÓN: Tu Worker de Cloudflare
+        const PROXY_URL = "https://koda-proxy.proyectosapps50.workers.dev/";
+        const TARGET_IP = "45.235.98.62"; // Podés cambiarla por la IP que quieras
+        const TARGET_PORT = "27015";
 
-        document.addEventListener('DOMContentLoaded', refreshAll);
+        async function scanServer() {
+            const statusEl = document.getElementById('server-status');
+            const idEl = document.getElementById('server-id');
+            const regionEl = document.getElementById('server-region');
+            const timeEl = document.getElementById('last-update');
 
-        function setFilter(game) {
-            currentFilter = game;
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + game).classList.add('active');
-            refreshAll();
-        }
-
-        async function addServer() {
-            const input = document.getElementById('ip-input');
-            const ip = input.value.trim();
-            if(!ip) return;
-            let servers = JSON.parse(localStorage.getItem('koda_nodes_v4') || '[]');
-            if(!servers.find(s => s.ip === ip)) {
-                servers.push({ ip: ip, game: currentFilter });
-                localStorage.setItem('koda_nodes_v4', JSON.stringify(servers));
-            }
-            input.value = '';
-            refreshAll();
-        }
-
-        async function refreshAll() {
-            const container = document.getElementById('server-list');
-            const allServers = JSON.parse(localStorage.getItem('koda_nodes_v4') || '[]');
-            const filtered = allServers.filter(s => s.game === currentFilter);
-            container.innerHTML = '';
-            if(filtered.length === 0) {
-                container.innerHTML = '<p class="text-gray-800 text-center text-[10px] py-10">SIN CONEXIONES ESTABLECIDAS</p>';
-                return;
-            }
-            filtered.forEach(s => renderServerCard(s.ip));
-        }
-
-        async function renderServerCard(ipPort) {
-            const container = document.getElementById('server-list');
-            const [host, port] = ipPort.split(':');
-            const card = document.createElement('div');
-            card.className = 'server-card p-4 rounded-r-lg flex items-center justify-between';
-            container.appendChild(card);
+            statusEl.innerText = "SCANNING...";
 
             try {
-                const res = await fetch(`${API_BASE}?type=cs16&host=${host}&port=${port || 27015}`);
-                const data = await res.json();
-                if(data.error) throw new Error();
+                // Llamada a tu Worker con los parámetros host y port
+                const response = await fetch(`${PROXY_URL}?host=${TARGET_IP}&port=${TARGET_PORT}`);
+                const data = await response.json();
 
-                card.classList.add('online');
-                card.innerHTML = `
-                    <div class="flex flex-col gap-1 overflow-hidden">
-                        <div class="flex items-center gap-2">
-                            <span class="map-badge">${data.map}</span>
-                            <span class="text-[10px] text-green-500 font-bold">${data.ping}ms</span>
-                        </div>
-                        <span class="text-sm font-bold text-white truncate leading-tight">${data.name}</span>
-                        <div class="flex items-center gap-2 text-[9px] text-gray-500 font-bold">
-                            <span>${ipPort}</span>
-                            <span class="text-gray-700">•</span>
-                            <span>${data.players.length}/${data.maxplayers} USERS</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="copyIP('${ipPort}', this)" class="btn-copy px-3 py-2 rounded">COPY</button>
-                        <button onclick="removeServer('${ipPort}')" class="text-gray-800 p-2">✕</button>
-                    </div>
-                `;
-            } catch (e) {
-                card.classList.add('offline');
-                card.innerHTML = `
-                    <div class="flex flex-col"><span class="text-[10px] text-red-700 font-bold">SIGNAL LOST</span><span class="text-xs text-gray-600 font-bold">${ipPort}</span></div>
-                    <button onclick="removeServer('${ipPort}')" class="text-gray-800">✕</button>
-                `;
+                if (data.response && data.response.servers && data.response.servers.length > 0) {
+                    const server = data.response.servers[0];
+                    
+                    statusEl.innerText = "ONLINE";
+                    statusEl.className = "status-online";
+                    idEl.innerText = server.steamid;
+                    regionEl.innerText = server.region === -1 ? "GLOBAL/LATAM" : server.region;
+                    
+                } else {
+                    statusEl.innerText = "OFFLINE/NOT_FOUND";
+                    statusEl.className = "status-offline";
+                }
+            } catch (error) {
+                console.error("Scan Error:", error);
+                statusEl.innerText = "COMMS_FAILURE";
+                statusEl.className = "status-offline";
             }
+
+            timeEl.innerText = new Date().toLocaleTimeString();
         }
 
-        function copyIP(text, btn) {
-            navigator.clipboard.writeText(text);
-            const oldText = btn.innerText;
-            btn.innerText = "COPIED";
-            btn.style.background = "#ff8c00";
-            btn.style.color = "white";
-            setTimeout(() => { btn.innerText = oldText; btn.style.background = ""; btn.style.color = ""; }, 1500);
-        }
-
-        function removeServer(ip) {
-            let servers = JSON.parse(localStorage.getItem('koda_nodes_v4') || '[]');
-            servers = servers.filter(s => s.ip !== ip);
-            localStorage.setItem('koda_nodes_v4', JSON.stringify(servers));
-            refreshAll();
-        }
+        // Iniciar escaneo y repetir cada 20 segundos
+        scanServer();
+        setInterval(scanServer, 20000);
     </script>
 </body>
 </html>
