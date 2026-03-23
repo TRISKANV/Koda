@@ -164,30 +164,34 @@
             card.className = 'server-card p-4 rounded-r-lg flex items-center justify-between';
             container.appendChild(card);
 
+            // Determinamos la extensión del icono (hl suele ser jpg en tu repo)
+            const ext = (currentFilter === 'hl') ? 'jpg' : 'png';
+            const iconSrc = `assets/${currentFilter}.${ext}`;
+
             try {
                 const res = await fetch(`${PROXY_URL}?host=${host}&port=${port || 27015}`);
                 const data = await res.json();
 
                 if (data.response && data.response.servers && data.response.servers.length > 0) {
                     const s = data.response.servers[0];
-                    
-                    // CORRECCIÓN DE MAPA Y JUGADORES
-                    const mapaActual = s.map ? s.map.toUpperCase() : (s.gamedir ? s.gamedir.toUpperCase() : "DESCONOCIDO");
-                    // Evitamos el 'appid' para no mostrar siempre "10"
+                    const mapaActual = s.map ? s.map.toUpperCase() : "DESCONOCIDO";
                     const infoJugadores = s.players !== undefined ? `${s.players}/32` : "ACTIVO";
 
                     card.classList.add('online');
                     card.innerHTML = `
-                        <div class="flex flex-col gap-1 overflow-hidden">
-                            <div class="flex items-center gap-2">
-                                <span class="map-badge">${mapaActual}</span>
-                                <span class="text-[10px] text-green-500 font-bold">CONECTADO</span>
-                            </div>
-                            <span class="text-sm font-bold text-white truncate uppercase">SVR_${ipPort.split(':')[0]}</span>
-                            <div class="flex items-center gap-2 text-[9px] text-gray-500 font-bold">
-                                <span>IP: ${ipPort}</span>
-                                <span class="text-gray-700">•</span>
-                                <span>UNIDADES: ${infoJugadores}</span>
+                        <div class="flex items-center gap-4 overflow-hidden">
+                            <img src="${iconSrc}" class="w-10 h-10 rounded border border-gray-700 object-cover flex-shrink-0">
+                            <div class="flex flex-col gap-1 overflow-hidden">
+                                <div class="flex items-center gap-2">
+                                    <span class="map-badge">${mapaActual}</span>
+                                    <span class="text-[10px] text-green-500 font-bold">CONECTADO</span>
+                                </div>
+                                <span class="text-sm font-bold text-white truncate uppercase">SVR_${ipPort.split(':')[0]}</span>
+                                <div class="flex items-center gap-2 text-[9px] text-gray-500 font-bold">
+                                    <span>IP: ${ipPort}</span>
+                                    <span class="text-gray-700">•</span>
+                                    <span>UNIDADES: ${infoJugadores}</span>
+                                </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -199,9 +203,12 @@
             } catch (e) {
                 card.classList.add('offline');
                 card.innerHTML = `
-                    <div class="flex flex-col">
-                        <span class="text-[10px] text-red-700 font-bold">SEÑAL PERDIDA</span>
-                        <span class="text-xs text-gray-600 font-bold">${ipPort}</span>
+                    <div class="flex items-center gap-4">
+                        <img src="${iconSrc}" class="w-10 h-10 rounded border border-gray-800 opacity-20 grayscale">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-red-700 font-bold">SEÑAL PERDIDA</span>
+                            <span class="text-xs text-gray-600 font-bold">${ipPort}</span>
+                        </div>
                     </div>
                     <button onclick="removeServer('${ipPort}')" class="text-gray-800">✕</button>
                 `;
