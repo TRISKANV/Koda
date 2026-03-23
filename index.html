@@ -2,157 +2,224 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Koda - Tactical Analytics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Koda - Centro Táctico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #050a05;
-            color: #00ff41;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            text-shadow: 0 0 5px #00ff41;
+        :root { --bg: #0d0e10; --panel: #16171d; --accent: #ff8c00; --online: #00ff41; }
+        
+        body { 
+            background-color: var(--bg); 
+            background-image: radial-gradient(#1a1c22 0.5px, transparent 0.5px);
+            background-size: 15px 15px;
+            color: #efefef; 
+            font-family: 'JetBrains Mono', monospace; 
         }
 
-        .hud-container {
-            border: 2px solid #00ff41;
-            padding: 25px;
-            background: rgba(0, 40, 0, 0.2);
-            box-shadow: inset 0 0 20px #00ff41;
-            width: 95%;
-            max-width: 500px;
+        /* Estética de las pestañas */
+        .category-btn img { 
+            border: 1px solid #333; 
+            filter: grayscale(1) opacity(0.5); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 80px; height: 110px; object-fit: cover; border-radius: 8px;
+        }
+        .category-btn.active img { 
+            filter: grayscale(0) opacity(1); 
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* Tarjeta estilo HUD Militar */
+        .server-card {
+            background: var(--panel);
+            border: 1px solid #2a2c33;
+            border-left: 5px solid #333;
             position: relative;
+            overflow: hidden;
         }
+        .server-card.online { border-left-color: var(--online); }
+        .server-card.offline { border-left-color: #ff3e3e; }
 
-        .header { border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; letter-spacing: 2px; }
-
-        .search-box { display: flex; gap: 10px; margin-bottom: 25px; }
-
-        input {
-            background: black;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            padding: 10px;
-            flex-grow: 1;
-            font-family: 'Courier New', monospace;
-            outline: none;
-        }
-
-        button {
-            background: #004400;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            padding: 10px 20px;
-            cursor: pointer;
+        .map-badge {
+            background: rgba(0,0,0,0.4);
+            color: var(--accent);
+            padding: 2px 8px;
+            font-size: 10px;
             font-weight: bold;
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            text-transform: uppercase;
         }
 
-        button:hover { background: #00ff41; color: black; }
-
-        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-        .data-item { border: 1px solid rgba(0, 255, 65, 0.3); padding: 10px; background: rgba(0,20,0,0.4); }
-
-        .label { font-size: 0.7em; opacity: 0.6; display: block; margin-bottom: 5px; }
-        .value { font-size: 1.1em; font-weight: bold; }
-
-        .online { color: #00ff41; }
-        .offline { color: #ff0000; text-shadow: 0 0 10px #ff0000; }
-
-        .scanline {
-            width: 100%; height: 2px;
-            background: rgba(0, 255, 65, 0.1);
-            position: absolute; top: 0; left: 0;
-            animation: moveScan 5s linear infinite;
+        .btn-copy {
+            background: #212329;
+            border: 1px solid #3a3d46;
+            color: #aaa;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            transition: all 0.2s;
         }
-        @keyframes moveScan { 0% { top: 0; } 100% { top: 100%; } }
+        .btn-copy:active { background: var(--accent); color: white; }
+
+        .valve-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
+        
+        /* Ocultar scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
+<body class="p-5">
 
-    <div class="hud-container">
-        <div class="scanline"></div>
-        <div class="header">> KODA_SATELLITE_UPLINK</div>
-        
-        <div class="search-box">
-            <input type="text" id="target-ip" placeholder="IP:PUERTO (Ej: 91.201.67.136:27016)">
-            <button onclick="fetchServer()">SCAN</button>
+    <header class="mb-6 flex justify-between items-end">
+        <div>
+            <h1 class="text-4xl font-black valve-title text-white italic">KODA</h1>
+            <div class="h-1 w-12 bg-orange-600"></div>
         </div>
+        <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Sistema v2.0 // Activo</p>
+    </header>
 
-        <div class="data-grid">
-            <div class="data-item">
-                <span class="label">SYSTEM_STATUS</span>
-                <span id="status" class="value">READY</span>
-            </div>
-            <div class="data-item">
-                <span class="label">ACTIVE_UNITS</span>
-                <span id="players" class="value">00/00</span>
-            </div>
-            <div class="data-item">
-                <span class="label">SECTOR_MAP</span>
-                <span id="map" class="value">---</span>
-            </div>
-            <div class="data-item">
-                <span class="label">VAC_SHIELD</span>
-                <span id="vac" class="value">---</span>
-            </div>
-            <div class="data-item">
-                <span class="label">ENGINE_VER</span>
-                <span class="value">G-SOURCE</span>
-            </div>
-            <div class="data-item">
-                <span class="label">SIGNAL_STRENGTH</span>
-                <span id="ping" class="value">STABLE</span>
-            </div>
+    <section class="flex gap-4 overflow-x-auto pb-6 no-scrollbar">
+        <div onclick="setFilter('cs16')" class="category-btn active text-center flex-shrink-0" id="btn-cs16">
+            <img src="assets/cs16.png" alt="CS 1.6">
+            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS 1.6</p>
         </div>
+        <div onclick="setFilter('csgo')" class="category-btn text-center flex-shrink-0" id="btn-csgo">
+            <img src="assets/csgo.png" alt="CS:GO">
+            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS:GO</p>
+        </div>
+        <div onclick="setFilter('hl')" class="category-btn text-center flex-shrink-0" id="btn-hl">
+            <img src="assets/hl.jpg" alt="Half-Life">
+            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">Half-Life</p>
+        </div>
+        <div onclick="setFilter('tf2')" class="category-btn text-center flex-shrink-0" id="btn-tf2">
+            <img src="assets/tf2.png" alt="TF2">
+            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">TF 2</p>
+        </div>
+    </section>
 
-        <div style="font-size: 0.7em; margin-top: 20px; opacity: 0.4; display: flex; justify-content: space-between;">
-            <span>COORD_REF: <span id="coord">N/A</span></span>
-            <span>LAST_SYNC: <span id="clock">00:00:00</span></span>
+    <section class="mb-8">
+        <div class="relative">
+            <input type="text" id="ip-input" placeholder="INGRESAR PROTOCOLO IP (ej: 45.235.98.62:27015)" 
+                class="w-full p-4 pl-10 rounded-lg bg-[#111216] border border-[#2a2c33] focus:border-orange-500 outline-none text-sm text-orange-500 font-bold placeholder:text-gray-700">
+            <div class="absolute left-3 top-4 text-gray-700 italic">>></div>
         </div>
-    </div>
+        <button onclick="addServer()" 
+            class="w-full mt-2 py-3 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-lg uppercase text-[11px] tracking-tighter">
+            Confirmar Enlace de Servidor
+        </button>
+    </section>
+
+    <h2 id="list-title" class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 border-b border-gray-800 pb-2">Nodos de Red Detectados</h2>
+    
+    <div id="server-list" class="space-y-4"></div>
 
     <script>
-        const PROXY = "https://koda-proxy.proyectosapps50.workers.dev/";
+        let currentFilter = 'cs16';
+        // URL DE TU PROPIO WORKER DE CLOUDFLARE
+        const PROXY_URL = "https://koda-proxy.proyectosapps50.workers.dev/";
 
-        async function fetchServer() {
-            const inputVal = document.getElementById('target-ip').value;
-            const statusEl = document.getElementById('status');
+        document.addEventListener('DOMContentLoaded', refreshAll);
+
+        function setFilter(game) {
+            currentFilter = game;
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + game).classList.add('active');
+            refreshAll();
+        }
+
+        async function addServer() {
+            const input = document.getElementById('ip-input');
+            const ip = input.value.trim();
+            if(!ip) return;
+            let servers = JSON.parse(localStorage.getItem('koda_nodes_v4') || '[]');
+            if(!servers.find(s => s.ip === ip)) {
+                servers.push({ ip: ip, game: currentFilter });
+                localStorage.setItem('koda_nodes_v4', JSON.stringify(servers));
+            }
+            input.value = '';
+            refreshAll();
+        }
+
+        async function refreshAll() {
+            const container = document.getElementById('server-list');
+            const allServers = JSON.parse(localStorage.getItem('koda_nodes_v4') || '[]');
+            const filtered = allServers.filter(s => s.game === currentFilter);
+            container.innerHTML = '';
+            if(filtered.length === 0) {
+                container.innerHTML = '<p class="text-gray-800 text-center text-[10px] py-10">SIN CONEXIONES ESTABLECIDAS</p>';
+                return;
+            }
+            // Cargamos cada servidor guardado
+            for (const s of filtered) {
+                await renderServerCard(s.ip);
+            }
+        }
+
+        async function renderServerCard(ipPort) {
+            const container = document.getElementById('server-list');
+            const [host, port] = ipPort.split(':');
             
-            if(!inputVal) return;
-
-            const [ip, port = '27015'] = inputVal.split(':');
-            statusEl.innerText = "SCANNING...";
-            statusEl.className = "value";
+            const card = document.createElement('div');
+            card.className = 'server-card p-4 rounded-r-lg flex items-center justify-between';
+            container.appendChild(card);
 
             try {
-                const response = await fetch(`${PROXY}?host=${ip}&port=${port}`);
-                const data = await response.json();
+                // Consulta a través de tu Worker
+                const res = await fetch(`${PROXY_URL}?host=${host}&port=${port || 27015}`);
+                const data = await res.json();
 
                 if (data.response && data.response.servers && data.response.servers.length > 0) {
                     const s = data.response.servers[0];
-                    
-                    statusEl.innerText = "LINKED";
-                    statusEl.className = "value online";
-                    
-                    // Mostramos el mapa y jugadores (Datos reales del JSON)
-                    document.getElementById('map').innerText = s.gamedir.toUpperCase();
-                    document.getElementById('players').innerText = `${s.appid}/32`; // Nota: appid es el ID del juego, Steam limita algunos campos.
-                    document.getElementById('vac').innerText = s.secure ? "ACTIVE" : "DISABLED";
-                    document.getElementById('coord').innerText = s.addr;
+                    card.classList.add('online');
+                    card.innerHTML = `
+                        <div class="flex flex-col gap-1 overflow-hidden">
+                            <div class="flex items-center gap-2">
+                                <span class="map-badge">${s.gamedir.toUpperCase()}</span>
+                                <span class="text-[10px] text-green-500 font-bold">SEÑAL_OK</span>
+                            </div>
+                            <span class="text-sm font-bold text-white truncate leading-tight">ID_STEAM: ${s.steamid.substring(0, 12)}...</span>
+                            <div class="flex items-center gap-2 text-[9px] text-gray-500 font-bold">
+                                <span>${ipPort}</span>
+                                <span class="text-gray-700">•</span>
+                                <span>SEGURIDAD: ${s.secure ? 'VAC_ACTIVO' : 'SIN_VAC'}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="copyIP('${ipPort}', this)" class="btn-copy px-3 py-2 rounded">COPIAR</button>
+                            <button onclick="removeServer('${ipPort}')" class="text-gray-800 p-2">✕</button>
+                        </div>
+                    `;
                 } else {
-                    statusEl.innerText = "LOST_SIG";
-                    statusEl.className = "value offline";
+                    throw new Error("Offline");
                 }
-            } catch (err) {
-                statusEl.innerText = "ERROR";
-                statusEl.className = "value offline";
+            } catch (e) {
+                card.classList.add('offline');
+                card.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-red-700 font-bold">SEÑAL PERDIDA</span>
+                        <span class="text-xs text-gray-600 font-bold">${ipPort}</span>
+                    </div>
+                    <button onclick="removeServer('${ipPort}')" class="text-gray-800">✕</button>
+                `;
             }
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+        }
+
+        function copyIP(text, btn) {
+            navigator.clipboard.writeText(text);
+            const oldText = btn.innerText;
+            btn.innerText = "COPIADO";
+            btn.style.background = "#ff8c00";
+            btn.style.color = "white";
+            setTimeout(() => { btn.innerText = oldText; btn.style.background = ""; btn.style.color = ""; }, 1500);
+        }
+
+        function removeServer(ip) {
+            let servers = JSON.parse(localStorage.getItem('koda_nodes_v4') || '[]');
+            servers = servers.filter(s => s.ip !== ip);
+            localStorage.setItem('koda_nodes_v4', JSON.stringify(servers));
+            refreshAll();
         }
     </script>
 </body>
