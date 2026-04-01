@@ -3,148 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Koda - Panel Táctico</title>
+    <title>Koda - Terminal Táctica</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0d0e10; --panel: #16171d; --accent: #ff8c00; --online: #00ff41; }
+        body { background-color: var(--bg); color: #efefef; font-family: 'JetBrains Mono', monospace; }
         
-        body { 
-            background-color: var(--bg); 
-            background-image: radial-gradient(#1a1c22 0.5px, transparent 0.5px);
-            background-size: 15px 15px;
-            color: #efefef; 
-            font-family: 'JetBrains Mono', monospace; 
-        }
-
-        /* Estética de Pestañas (Iconos de arriba) */
+        /* Botones de Categoría */
         .category-btn img { 
-            border: 1px solid #333; 
-            filter: grayscale(1) opacity(0.3); 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 80px; height: 110px; object-fit: cover; border-radius: 8px;
+            border: 1px solid #333; filter: grayscale(1) opacity(0.4); 
+            transition: all 0.3s; width: 80px; height: 100px; object-fit: cover; border-radius: 8px;
         }
-        .category-btn:hover img { filter: grayscale(0.5) opacity(0.7); border-color: #555; }
         .category-btn.active img { 
-            filter: grayscale(0) opacity(1); 
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
-            transform: translateY(-5px);
+            filter: grayscale(0) opacity(1); border: 2px solid var(--accent);
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.3); transform: translateY(-3px);
         }
 
-        /* Tarjeta de Servidor */
+        /* Tarjetas de Servidor */
         .server-card {
-            background: var(--panel);
-            border: 1px solid #2a2c33;
-            border-left: 5px solid #333;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
+            background: var(--panel); border: 1px solid #2a2c33; border-left: 4px solid #333;
+            transition: all 0.3s ease; position: relative;
         }
         .server-card.online { border-left-color: var(--online); }
-        .server-card.offline { border-left-color: #ff3e3e; opacity: 0.7; }
+        .server-card.offline { border-left-color: #ff3e3e; }
 
         .map-badge {
-            background: rgba(0,0,0,0.4);
-            color: var(--accent);
-            padding: 2px 8px;
-            font-size: 10px;
-            font-weight: bold;
-            border: 1px solid rgba(255, 140, 0, 0.2);
+            background: rgba(255, 140, 0, 0.1); color: var(--accent);
+            padding: 1px 6px; font-size: 9px; font-weight: 800; border: 1px solid rgba(255, 140, 0, 0.3);
             text-transform: uppercase;
         }
 
-        .btn-action {
-            background: #212329;
-            border: 1px solid #3a3d46;
-            color: #aaa;
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            transition: all 0.2s;
-            padding: 8px 12px;
-            border-radius: 4px;
-        }
-        .btn-action:hover { background: #333; color: white; }
+        .valve-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spinning { animation: spin 1s linear infinite; }
-
-        .valve-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-5">
+<body class="p-4 max-w-2xl mx-auto">
 
-    <header class="mb-6 flex justify-between items-end">
+    <header class="mb-6 flex justify-between items-start">
         <div>
-            <h1 class="text-4xl font-black valve-title text-white italic">KODA</h1>
-            <div class="h-1 w-12 bg-orange-600"></div>
+            <h1 class="text-3xl font-black italic valve-title text-white">KODA</h1>
+            <div class="h-1 w-16 bg-orange-600 mt-1"></div>
         </div>
-        <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">SISTEMA DE ENLACE // ACTIVO</p>
+        <div class="text-right">
+            <p id="clock" class="text-[10px] text-orange-500 font-bold">--:--:--</p>
+            <p class="text-[8px] text-gray-600 uppercase tracking-widest">SISTEMA ACTIVO</p>
+        </div>
     </header>
 
-    <section class="flex gap-4 overflow-x-auto pb-6 no-scrollbar">
-        <div onclick="setFilter('cs16')" class="category-btn active text-center flex-shrink-0" id="btn-cs16">
-            <img src="assets/cs16.png" alt="CS 1.6">
-            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS 1.6</p>
+    <section class="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+        <div onclick="setFilter('cs16')" class="category-btn active cursor-pointer flex-shrink-0" id="btn-cs16">
+            <img src="https://steamcdn-a.akamaihd.net/steam/apps/10/header.jpg" alt="CS 1.6">
+            <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">1.6</p>
         </div>
-        <div onclick="setFilter('csgo')" class="category-btn text-center flex-shrink-0" id="btn-csgo">
-            <img src="assets/csgo.png" alt="CS:GO">
-            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS:GO</p>
+        <div onclick="setFilter('csgo')" class="category-btn cursor-pointer flex-shrink-0" id="btn-csgo">
+            <img src="https://steamcdn-a.akamaihd.net/steam/apps/730/header.jpg" alt="CS:GO">
+            <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">GO</p>
         </div>
-        <div onclick="setFilter('hl')" class="category-btn text-center flex-shrink-0" id="btn-hl">
-            <img src="assets/hl.jpg" alt="Half-Life">
-            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">Half-Life</p>
+        <div onclick="setFilter('hl')" class="category-btn cursor-pointer flex-shrink-0" id="btn-hl">
+            <img src="https://steamcdn-a.akamaihd.net/steam/apps/70/header.jpg" alt="HL">
+            <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">HL</p>
         </div>
-        <div onclick="setFilter('tf2')" class="category-btn text-center flex-shrink-0" id="btn-tf2">
-            <img src="assets/tf2.png" alt="TF2">
-            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">TF2</p>
+        <div onclick="setFilter('tf2')" class="category-btn cursor-pointer flex-shrink-0" id="btn-tf2">
+            <img src="https://steamcdn-a.akamaihd.net/steam/apps/440/header.jpg" alt="TF2">
+            <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">TF2</p>
         </div>
     </section>
 
-    <section class="mb-8">
-        <div class="relative">
-            <input type="text" id="ip-input" placeholder="INGRESAR IP:PUERTO (EJ: 45.235.98.62:27015)" 
-                class="w-full p-4 pl-10 rounded-lg bg-[#111216] border border-[#2a2c33] focus:border-orange-500 outline-none text-sm text-orange-500 font-bold placeholder:text-gray-700">
-            <div class="absolute left-3 top-4 text-gray-700 italic">>></div>
-        </div>
+    <section class="space-y-2 mb-6">
+        <input type="text" id="ip-input" placeholder="IP:PUERTO (EJ: 45.235.98.62:27015)" 
+            class="w-full p-3 bg-[#111216] border border-[#2a2c33] rounded text-orange-500 font-bold text-sm outline-none">
         
-        <button onclick="addServer()" 
-            class="w-full mt-2 py-3 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-lg uppercase text-[11px] tracking-widest transition-colors">
-            Vincular Nuevo Nodo de Red
-        </button>
-
-        <button id="refresh-btn" onclick="refreshAll()" 
-            class="w-full mt-2 py-2 bg-[#1a1c22] border border-gray-800 hover:border-gray-600 text-gray-400 hover:text-white font-bold rounded-lg uppercase text-[9px] tracking-[2px] flex items-center justify-center gap-2 transition-all">
-            <span id="refresh-icon">🔄</span> ESCANEAR ESTADO DE SERVIDORES
-        </button>
+        <div class="flex gap-2">
+            <button onclick="addServer()" class="flex-1 py-2 bg-orange-600 text-white font-black rounded uppercase text-[10px] tracking-widest">Vincular Nodo</button>
+            <button onclick="refreshAll()" class="px-4 bg-[#1a1c22] border border-gray-800 text-white rounded hover:bg-gray-800">
+                <span id="refresh-icon" class="inline-block">🔄</span>
+            </button>
+        </div>
     </section>
 
-    <h2 class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 border-b border-gray-800 pb-2">Servidores en Memoria</h2>
-    
-    <div id="server-list" class="space-y-4"></div>
+    <div id="server-list" class="space-y-3"></div>
 
     <script>
         let currentFilter = 'cs16';
         const PROXY_URL = "https://koda-proxy.proyectosapps50.workers.dev/";
-
-        // Objeto centralizado para gestionar las extensiones de imagen correctas
-        const GAME_CONFIG = {
-            'cs16': { ext: 'png' },
-            'csgo': { ext: 'png' },
-            'hl':   { ext: 'jpg' },
-            'tf2':  { ext: 'png' },
-            'default': { ext: 'png' }
+        
+        const GAME_ICONS = {
+            'cs16': 'https://steamcdn-a.akamaihd.net/steam/apps/10/header.jpg',
+            'csgo': 'https://steamcdn-a.akamaihd.net/steam/apps/730/header.jpg',
+            'hl': 'https://steamcdn-a.akamaihd.net/steam/apps/70/header.jpg',
+            'tf2': 'https://steamcdn-a.akamaihd.net/steam/apps/440/header.jpg'
         };
+
+        // Reloj
+        setInterval(() => { 
+            const clock = document.getElementById('clock');
+            if(clock) clock.innerText = new Date().toLocaleTimeString(); 
+        }, 1000);
 
         document.addEventListener('DOMContentLoaded', refreshAll);
 
         function setFilter(game) {
             currentFilter = game;
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            const activeBtn = document.getElementById('btn-' + game);
-            if(activeBtn) activeBtn.classList.add('active');
+            const btn = document.getElementById('btn-' + game);
+            if(btn) btn.classList.add('active');
             refreshAll();
         }
 
@@ -152,7 +118,6 @@
             const input = document.getElementById('ip-input');
             const ip = input.value.trim();
             if(!ip) return;
-
             let servers = JSON.parse(localStorage.getItem('koda_storage_v5') || '[]');
             if(!servers.find(s => s.ip === ip)) {
                 servers.push({ ip: ip, game: currentFilter });
@@ -164,95 +129,90 @@
 
         async function refreshAll() {
             const container = document.getElementById('server-list');
-            const refreshIcon = document.getElementById('refresh-icon');
+            const icon = document.getElementById('refresh-icon');
             const allServers = JSON.parse(localStorage.getItem('koda_storage_v5') || '[]');
+            const filtered = allServers.filter(s => s.game === currentFilter);
             
-            //  defecto
-            const safeFilter = GAME_CONFIG[currentFilter] ? currentFilter : 'cs16';
-            const filtered = allServers.filter(s => s.game === safeFilter);
-            
-            if(refreshIcon) refreshIcon.classList.add('spinning');
-            
+            if(icon) icon.classList.add('spinning');
             container.innerHTML = '';
+            
             if(filtered.length === 0) {
-                container.innerHTML = '<p class="text-gray-800 text-center text-[10px] py-10 uppercase font-bold tracking-widest italic">Sincronización Vacía - Agregue una IP</p>';
-                if(refreshIcon) refreshIcon.classList.remove('spinning');
+                container.innerHTML = '<p class="text-gray-800 text-center text-[10px] py-10 uppercase font-bold tracking-widest italic">Sector Vacío</p>';
+                if(icon) icon.classList.remove('spinning');
                 return;
             }
 
-            const promises = filtered.map(s => renderServerCard(s.ip));
-            await Promise.all(promises);
-
-            if(refreshIcon) refreshIcon.classList.remove('spinning');
+            // Ejecutar todas las consultas en paralelo para mayor velocidad
+            await Promise.all(filtered.map(s => renderServerCard(s.ip)));
+            if(icon) icon.classList.remove('spinning');
         }
 
         async function renderServerCard(ipPort) {
             const container = document.getElementById('server-list');
             const [host, port] = ipPort.split(':');
-            
             const card = document.createElement('div');
-            card.className = 'server-card p-4 rounded-r-lg flex items-center justify-between';
+            card.className = 'server-card p-3 flex items-center justify-between mb-1';
             container.appendChild(card);
 
-            // centralizado
-            const config = GAME_CONFIG[currentFilter] || GAME_CONFIG.default;
-            const iconSrc = `assets/${currentFilter}.${config.ext}`;
+            const iconSrc = GAME_ICONS[currentFilter];
+            const startTime = Date.now();
 
             try {
                 const res = await fetch(`${PROXY_URL}?host=${host}&port=${port || 27015}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                
                 const data = await res.json();
+                const latency = Date.now() - startTime;
 
+                // Lógica de extracción flexible basada en tu consola
+                let s = null;
                 if (data.response && data.response.servers && data.response.servers.length > 0) {
-                    const s = data.response.servers[0];
-                    const nombreServer = s.name || `SVR_${host.split('.')[0]}`;
-                    const mapaActual = s.map ? s.map.toUpperCase() : "DESCONOCIDO";
-                    const infoJugadores = s.players !== undefined ? `${s.players}/${s.max_players || 32}` : "ACTIVO";
+                    s = data.response.servers[0];
+                } else if (data.response && !data.response.servers) {
+                    s = data.response; 
+                }
+
+                if (s && (s.name || s.map)) {
+                    const mapName = (s.map || '---').toUpperCase();
+                    const serverName = s.name || `SERVER_${host.split('.')[0]}`;
+                    const playerCount = s.players !== undefined ? s.players : (s.players_count || 0);
+                    const maxPlayers = s.max_players || 32;
 
                     card.classList.add('online');
                     card.innerHTML = `
-                        <div class="flex items-center gap-4 overflow-hidden">
-                            <img src="${iconSrc}" class="w-10 h-10 rounded border border-gray-700 object-cover flex-shrink-0">
-                            <div class="flex flex-col gap-1 overflow-hidden">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <img src="${iconSrc}" class="w-12 h-12 rounded border border-gray-800 object-cover flex-shrink-0">
+                            <div class="flex flex-col min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <span class="map-badge">${mapaActual}</span>
-                                    <span class="text-[10px] text-green-500 font-bold tracking-tighter">ENLACE ESTABLE</span>
+                                    <span class="map-badge">${mapName}</span>
+                                    <span class="text-[9px] text-green-500 font-bold">${latency}ms</span>
                                 </div>
-                                <span class="text-sm font-bold text-white truncate uppercase">${nombreServer}</span>
-                                <div class="flex items-center gap-2 text-[9px] text-gray-500 font-bold">
-                                    <span class="text-orange-500/60">${ipPort}</span>
-                                    <span class="text-gray-800">•</span>
-                                    <span>UNIDADES: ${infoJugadores}</span>
+                                <span class="text-xs font-bold text-white truncate uppercase mt-1">${serverName}</span>
+                                <div class="text-[9px] text-gray-500 font-bold uppercase">
+                                    <span>${ipPort}</span> 
+                                    <span class="text-gray-800 mx-1">|</span> 
+                                    <span class="text-orange-500">${playerCount}/${maxPlayers} Jugadores</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="copyIP('${ipPort}', this)" class="btn-action">COPIAR</button>
-                            <button onclick="removeServer('${ipPort}')" class="text-gray-800 p-2 hover:text-red-600">✕</button>
-                        </div>
+                        <button onclick="removeServer('${ipPort}')" class="text-gray-700 hover:text-red-500 p-2">✕</button>
                     `;
-                } else { throw new Error(); }
-            } catch (e) {
+                } else {
+                    throw new Error("No hay datos");
+                }
+            } catch (error) {
                 card.classList.add('offline');
                 card.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <img src="${iconSrc}" class="w-10 h-10 rounded border border-gray-800 opacity-20 grayscale">
+                    <div class="flex items-center gap-3 opacity-40">
+                        <img src="${iconSrc}" class="w-12 h-12 rounded border border-gray-800 object-cover grayscale flex-shrink-0">
                         <div class="flex flex-col">
-                            <span class="text-[10px] text-red-700 font-bold">SEÑAL PERDIDA</span>
-                            <span class="text-xs text-gray-600 font-bold">${ipPort}</span>
-                            <span class="text-[8px] text-gray-800 uppercase tracking-widest">Reintentando enlace...</span>
+                            <span class="text-[10px] text-red-600 font-bold uppercase">Señal Perdida</span>
+                            <span class="text-[9px] text-gray-600">${ipPort}</span>
                         </div>
                     </div>
-                    <button onclick="removeServer('${ipPort}')" class="text-gray-800">✕</button>
+                    <button onclick="removeServer('${ipPort}')" class="text-gray-700 p-2">✕</button>
                 `;
             }
-        }
-
-        function copyIP(text, btn) {
-            navigator.clipboard.writeText(text);
-            const oldText = btn.innerText;
-            btn.innerText = "COPIADO";
-            btn.style.borderColor = "#00ff41"; btn.style.color = "#00ff41";
-            setTimeout(() => { btn.innerText = oldText; btn.style.borderColor = ""; btn.style.color = ""; }, 1500);
         }
 
         function removeServer(ip) {
