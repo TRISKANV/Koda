@@ -8,77 +8,55 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0d0e10; --panel: #16171d; --accent: #ff8c00; --online: #00ff41; }
-        body { background-color: var(--bg); color: #efefef; font-family: 'JetBrains Mono', monospace; overflow-x: hidden; }
-        
+        body { background-color: var(--bg); color: #efefef; font-family: 'JetBrains Mono', monospace; }
         .category-btn img { 
             border: 1px solid #333; filter: grayscale(1) opacity(0.4); 
             transition: all 0.3s; width: 80px; height: 100px; object-fit: cover; border-radius: 8px;
         }
-        .category-btn.active img { 
-            filter: grayscale(0) opacity(1); border: 2px solid var(--accent);
-            box-shadow: 0 0 15px rgba(255, 140, 0, 0.3); transform: translateY(-3px);
-        }
-
-        .server-card {
-            background: var(--panel); border: 1px solid #2a2c33; border-left: 4px solid #333;
-            transition: all 0.3s ease; position: relative; margin-bottom: 8px;
-        }
-        .server-card.online { border-left-color: var(--online); }
-        .server-card.offline { border-left-color: #ff3e3e; }
-
-        .map-badge {
-            background: rgba(255, 140, 0, 0.1); color: var(--accent);
-            padding: 1px 6px; font-size: 9px; font-weight: 800; border: 1px solid rgba(255, 140, 0, 0.3);
-            text-transform: uppercase;
-        }
-
-        .valve-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .category-btn.active img { filter: grayscale(0) opacity(1); border: 2px solid var(--accent); transform: translateY(-3px); }
+        .server-card { background: var(--panel); border: 1px solid #2a2c33; border-left: 4px solid #333; transition: all 0.3s; margin-bottom: 8px; }
+        .server-card.online { border-left-color: var(--online); box-shadow: inset 8px 0 15px -10px rgba(0,255,65,0.3); }
+        .server-card.offline { border-left-color: #ff3e3e; opacity: 0.5; }
+        .map-badge { background: rgba(255,140,0,0.1); color: var(--accent); padding: 1px 6px; font-size: 9px; font-weight: 800; border: 1px solid rgba(255,140,0,0.3); }
         .spinning { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="p-4 max-w-2xl mx-auto">
 
-    <header class="mb-6 flex justify-between items-start">
+    <header class="mb-6 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-black italic valve-title text-white">KODA</h1>
-            <div class="h-1 w-16 bg-orange-600 mt-1"></div>
+            <h1 class="text-3xl font-black italic text-white tracking-tighter" style="font-family:'Oswald'">KODA</h1>
+            <div class="h-1 w-12 bg-orange-600"></div>
         </div>
         <div class="text-right">
             <p id="clock" class="text-[10px] text-orange-500 font-bold">--:--:--</p>
-            <p class="text-[8px] text-gray-600 uppercase tracking-widest">SISTEMA REDUNDANTE</p>
+            <p class="text-[7px] text-gray-600 uppercase tracking-widest">Global Link Protocol</p>
         </div>
     </header>
 
-    <section class="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+    <section class="flex gap-3 overflow-x-auto pb-4">
         <div onclick="setFilter('cs16')" class="category-btn active cursor-pointer flex-shrink-0" id="btn-cs16">
-            <img src="https://steamcdn-a.akamaihd.net/steam/apps/10/header.jpg" alt="1.6">
-            <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">1.6</p>
+            <img src="https://steamcdn-a.akamaihd.net/steam/apps/10/header.jpg">
+            <p class="text-[9px] mt-1 text-center font-bold opacity-50">1.6</p>
         </div>
         <div onclick="setFilter('csgo')" class="category-btn cursor-pointer flex-shrink-0" id="btn-csgo">
-            <img src="https://steamcdn-a.akamaihd.net/steam/apps/730/header.jpg" alt="GO">
-            <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">GO</p>
+            <img src="https://steamcdn-a.akamaihd.net/steam/apps/730/header.jpg">
+            <p class="text-[9px] mt-1 text-center font-bold opacity-50">GO</p>
         </div>
         <div onclick="setFilter('hl')" class="category-btn cursor-pointer flex-shrink-0" id="btn-hl">
-            <img src="https://steamcdn-a.akamaihd.net/steam/apps/70/header.jpg" alt="HL">
-            <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">HL</p>
-        </div>
-        <div onclick="setFilter('tf2')" class="category-btn cursor-pointer flex-shrink-0" id="btn-tf2">
-            <img src="https://steamcdn-a.akamaihd.net/steam/apps/440/header.jpg" alt="TF2">
-            <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">TF2</p>
+            <img src="https://steamcdn-a.akamaihd.net/steam/apps/70/header.jpg">
+            <p class="text-[9px] mt-1 text-center font-bold opacity-50">HL</p>
         </div>
     </section>
 
     <section class="space-y-2 mb-6">
-        <input type="text" id="ip-input" placeholder="IP:PUERTO" 
+        <input type="text" id="ip-input" placeholder="IP:PORT (45.235.98.62:27015)" 
             class="w-full p-3 bg-[#111216] border border-[#2a2c33] rounded text-orange-500 font-bold text-sm outline-none">
-        
         <div class="flex gap-2">
-            <button onclick="addServer()" class="flex-1 py-2 bg-orange-600 text-white font-black rounded uppercase text-[10px]">Vincular Nodo</button>
+            <button onclick="addServer()" class="flex-1 py-2 bg-orange-600 text-white font-black rounded uppercase text-[10px] tracking-widest">Vincular</button>
             <button onclick="refreshAll()" class="px-4 bg-[#1a1c22] border border-gray-800 text-white rounded">
-                <span id="refresh-icon" class="inline-block">🔄</span>
+                <span id="refresh-icon">🔄</span>
             </button>
         </div>
     </section>
@@ -87,24 +65,16 @@
 
     <script>
         let currentFilter = 'cs16';
-        // LISTA DE PROXIES (Si uno falla, usa el otro)
-        const PROXIES = [
-            "https://koda-proxy.proyectosapps50.workers.dev/",
-            "https://api.steampowered.com/IGameServersService/GetServerList/v1/?key=YOUR_KEY_HERE&filter=\\addr\\" // Respaldo opcional
-        ];
-        
+        // CAMBIO DE PROXY A UNO MÁS ESTABLE (Steam Browser API Proxy)
+        const PROXY_URL = "https://api.codetabs.com/v1/proxy?quest=https://koda-proxy.proyectosapps50.workers.dev/";
+
         const GAME_ICONS = {
             'cs16': 'https://steamcdn-a.akamaihd.net/steam/apps/10/header.jpg',
             'csgo': 'https://steamcdn-a.akamaihd.net/steam/apps/730/header.jpg',
-            'hl': 'https://steamcdn-a.akamaihd.net/steam/apps/70/header.jpg',
-            'tf2': 'https://steamcdn-a.akamaihd.net/steam/apps/440/header.jpg'
+            'hl': 'https://steamcdn-a.akamaihd.net/steam/apps/70/header.jpg'
         };
 
-        setInterval(() => { 
-            const c = document.getElementById('clock');
-            if(c) c.innerText = new Date().toLocaleTimeString(); 
-        }, 1000);
-
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
         document.addEventListener('DOMContentLoaded', refreshAll);
 
         function setFilter(game) {
@@ -115,47 +85,50 @@
         }
 
         function addServer() {
-            const input = document.getElementById('ip-input');
-            if(!input.value.trim()) return;
-            let servers = JSON.parse(localStorage.getItem('koda_storage_v5') || '[]');
-            servers.push({ ip: input.value.trim(), game: currentFilter });
-            localStorage.setItem('koda_storage_v5', JSON.stringify(servers));
-            input.value = '';
+            const val = document.getElementById('ip-input').value.trim();
+            if(!val) return;
+            let srv = JSON.parse(localStorage.getItem('koda_v6') || '[]');
+            srv.push({ ip: val, game: currentFilter });
+            localStorage.setItem('koda_v6', JSON.stringify(srv));
+            document.getElementById('ip-input').value = '';
             refreshAll();
         }
 
         async function refreshAll() {
             const container = document.getElementById('server-list');
             const icon = document.getElementById('refresh-icon');
-            const allServers = JSON.parse(localStorage.getItem('koda_storage_v5') || '[]');
-            const filtered = allServers.filter(s => s.game === currentFilter);
+            const srv = JSON.parse(localStorage.getItem('koda_v6') || '[]').filter(s => s.game === currentFilter);
             
-            if(icon) icon.classList.add('spinning');
+            icon.classList.add('spinning');
             container.innerHTML = '';
             
-            for (const s of filtered) {
-                await renderServerCard(s.ip);
+            if(srv.length === 0) {
+                container.innerHTML = '<p class="text-gray-800 text-center text-[10px] py-10 uppercase italic">Sector Vacío</p>';
+                icon.classList.remove('spinning');
+                return;
             }
-            if(icon) icon.classList.remove('spinning');
+
+            for (const s of srv) { await renderCard(s.ip); }
+            icon.classList.remove('spinning');
         }
 
-        async function renderServerCard(ipPort) {
+        async function renderCard(ipPort) {
             const container = document.getElementById('server-list');
-            const [host, port] = ipPort.split(':');
             const card = document.createElement('div');
             card.className = 'server-card p-3 flex items-center justify-between';
             container.appendChild(card);
 
-            const startTime = Date.now();
-            let data = null;
+            const [h, p] = ipPort.split(':');
+            const start = Date.now();
 
             try {
-                // INTENTO 1: Proxy Principal
-                const res = await fetch(`${PROXIES[0]}?host=${host}&port=${port || 27015}`);
-                data = await res.json();
-                
-                const latency = Date.now() - startTime;
-                let s = data.response?.servers?.[0] || data.response;
+                // Bypass para evitar bloqueos
+                const response = await fetch(`${PROXY_URL}?host=${h}&port=${p || 27015}`);
+                const data = await response.json();
+                const latency = Date.now() - start;
+
+                // Extracción ultra-flexible
+                let s = data.response?.servers?.[0] || data.response || (data.servers ? data.servers[0] : null);
 
                 if (s && (s.name || s.map)) {
                     card.classList.add('online');
@@ -164,34 +137,25 @@
                             <img src="${GAME_ICONS[currentFilter]}" class="w-12 h-12 rounded border border-gray-800 object-cover">
                             <div class="flex flex-col min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <span class="map-badge">${(s.map || '---').toUpperCase()}</span>
+                                    <span class="map-badge">${(s.map || 'N/A').toUpperCase()}</span>
                                     <span class="text-[9px] text-green-500 font-bold">${latency}ms</span>
                                 </div>
                                 <span class="text-xs font-bold text-white truncate uppercase mt-1">${s.name || 'SERVIDOR'}</span>
-                                <span class="text-[9px] text-gray-500 font-bold uppercase">${ipPort} | ${s.players || 0}/${s.max_players || 32} JUGS</span>
+                                <span class="text-[9px] text-gray-500 font-bold uppercase">${ipPort} | ${s.players || 0}/${s.max_players || 32}</span>
                             </div>
                         </div>
-                        <button onclick="removeServer('${ipPort}')" class="text-gray-700 p-2">✕</button>
+                        <button onclick="removeSvr('${ipPort}')" class="text-gray-700 p-2 text-xl">✕</button>
                     `;
                 } else { throw new Error(); }
             } catch (e) {
                 card.classList.add('offline');
-                card.innerHTML = `
-                    <div class="flex items-center gap-3 opacity-30">
-                        <img src="${GAME_ICONS[currentFilter]}" class="w-10 h-10 rounded border border-gray-800 grayscale">
-                        <div class="flex flex-col">
-                            <span class="text-[9px] text-red-600 font-bold uppercase">Nodo no responde</span>
-                            <span class="text-[8px] text-gray-600">${ipPort}</span>
-                        </div>
-                    </div>
-                    <button onclick="removeServer('${ipPort}')" class="text-gray-700 p-2">✕</button>
-                `;
+                card.innerHTML = `<div class="p-2 text-[9px] text-red-600 font-bold">SEÑAL INTERRUMPIDA // ${ipPort}</div><button onclick="removeSvr('${ipPort}')" class="text-gray-700 p-2">✕</button>`;
             }
         }
 
-        function removeServer(ip) {
-            let servers = JSON.parse(localStorage.getItem('koda_storage_v5') || '[]');
-            localStorage.setItem('koda_storage_v5', JSON.stringify(servers.filter(s => s.ip !== ip)));
+        function removeSvr(ip) {
+            let srv = JSON.parse(localStorage.getItem('koda_v6') || '[]');
+            localStorage.setItem('koda_v6', JSON.stringify(srv.filter(s => s.ip !== ip)));
             refreshAll();
         }
     </script>
