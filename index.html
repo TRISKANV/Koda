@@ -17,7 +17,6 @@
             font-family: 'JetBrains Mono', monospace; 
         }
 
-        /* Estética de Pestañas */
         .category-btn img { 
             border: 1px solid #333; 
             filter: grayscale(1) opacity(0.5); 
@@ -31,7 +30,6 @@
             transform: translateY(-5px);
         }
 
-        /* Tarjeta de Servidor */
         .server-card {
             background: var(--panel);
             border: 1px solid #2a2c33;
@@ -65,7 +63,10 @@
             border-radius: 4px;
         }
         .btn-action:hover { background: #333; color: white; }
-        .btn-action:active { background: var(--accent); color: white; }
+        
+        /* Animación de rotación para el icono de carga */
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spinning { animation: spin 1s linear infinite; }
 
         .valve-title { font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -102,16 +103,21 @@
                 class="w-full p-4 pl-10 rounded-lg bg-[#111216] border border-[#2a2c33] focus:border-orange-500 outline-none text-sm text-orange-500 font-bold placeholder:text-gray-700">
             <div class="absolute left-3 top-4 text-gray-700 italic">>></div>
         </div>
+        
         <button onclick="addServer()" 
-            class="w-full mt-2 py-3 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-lg uppercase text-[11px] tracking-widest">
+            class="w-full mt-2 py-3 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-lg uppercase text-[11px] tracking-widest transition-colors">
             Vincular Nuevo Nodo de Red
+        </button>
+
+        <button id="refresh-btn" onclick="refreshAll()" 
+            class="w-full mt-2 py-2 bg-[#1a1c22] border border-gray-800 hover:border-gray-600 text-gray-400 hover:text-white font-bold rounded-lg uppercase text-[9px] tracking-[2px] flex items-center justify-center gap-2 transition-all">
+            <span id="refresh-icon">🔄</span> ESCANEAR ESTADO DE SERVIDORES
         </button>
     </section>
 
     <h2 class="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 border-b border-gray-800 pb-2">Servidores en Memoria</h2>
     
-    <div id="server-list" class="space-y-4">
-        </div>
+    <div id="server-list" class="space-y-4"></div>
 
     <script>
         let currentFilter = 'cs16';
@@ -142,18 +148,26 @@
 
         async function refreshAll() {
             const container = document.getElementById('server-list');
+            const refreshIcon = document.getElementById('refresh-icon');
             const allServers = JSON.parse(localStorage.getItem('koda_storage_v5') || '[]');
             const filtered = allServers.filter(s => s.game === currentFilter);
             
+            // Efecto visual de carga en el botón
+            if(refreshIcon) refreshIcon.classList.add('spinning');
+            
             container.innerHTML = '';
             if(filtered.length === 0) {
-                container.innerHTML = '<p class="text-gray-800 text-center text-[10px] py-10 uppercase font-bold">Sin Conexiones Guardadas</p>';
+                container.innerHTML = '<p class="text-gray-800 text-center text-[10px] py-10 uppercase font-bold tracking-widest italic">Sincronización Vacía - Agregue una IP</p>';
+                if(refreshIcon) refreshIcon.classList.remove('spinning');
                 return;
             }
 
-            for (const s of filtered) {
-                await renderServerCard(s.ip);
-            }
+            // Cargamos todos los servidores filtrados
+            const promises = filtered.map(s => renderServerCard(s.ip));
+            await Promise.all(promises);
+
+            // Quitamos el efecto de carga
+            if(refreshIcon) refreshIcon.classList.remove('spinning');
         }
 
         async function renderServerCard(ipPort) {
@@ -173,8 +187,6 @@
 
                 if (data.response && data.response.servers && data.response.servers.length > 0) {
                     const s = data.response.servers[0];
-                    
-                    // Extraemos los datos reales que pedías
                     const nombreServer = s.name || `SVR_${host.split('.')[0]}`;
                     const mapaActual = s.map ? s.map.toUpperCase() : "DESCONOCIDO";
                     const infoJugadores = s.players !== undefined ? `${s.players}/${s.max_players || 32}` : "ACTIVO";
@@ -186,12 +198,12 @@
                             <div class="flex flex-col gap-1 overflow-hidden">
                                 <div class="flex items-center gap-2">
                                     <span class="map-badge">${mapaActual}</span>
-                                    <span class="text-[10px] text-green-500 font-bold">CONECTADO</span>
+                                    <span class="text-[10px] text-green-500 font-bold tracking-tighter">ENLACE ESTABLE</span>
                                 </div>
                                 <span class="text-sm font-bold text-white truncate uppercase">${nombreServer}</span>
                                 <div class="flex items-center gap-2 text-[9px] text-gray-500 font-bold">
-                                    <span>IP: ${ipPort}</span>
-                                    <span class="text-gray-700">•</span>
+                                    <span class="text-orange-500/60">${ipPort}</span>
+                                    <span class="text-gray-800">•</span>
                                     <span>UNIDADES: ${infoJugadores}</span>
                                 </div>
                             </div>
@@ -201,9 +213,8 @@
                             <button onclick="removeServer('${ipPort}')" class="text-gray-800 p-2 hover:text-red-600">✕</button>
                         </div>
                     `;
-                } else { throw new Error("No hay respuesta válida"); }
+                } else { throw new Error(); }
             } catch (e) {
-                // Si el servidor falla, mostramos una tarjeta amigable de error sin romper la app
                 card.classList.add('offline');
                 card.innerHTML = `
                     <div class="flex items-center gap-4">
@@ -211,7 +222,7 @@
                         <div class="flex flex-col">
                             <span class="text-[10px] text-red-700 font-bold">SEÑAL PERDIDA</span>
                             <span class="text-xs text-gray-600 font-bold">${ipPort}</span>
-                            <span class="text-[9px] text-gray-700 uppercase">Fallo al conectar con el nodo</span>
+                            <span class="text-[8px] text-gray-800 uppercase tracking-widest">Reintentando enlace...</span>
                         </div>
                     </div>
                     <button onclick="removeServer('${ipPort}')" class="text-gray-800">✕</button>
@@ -223,13 +234,8 @@
             navigator.clipboard.writeText(text);
             const oldText = btn.innerText;
             btn.innerText = "COPIADO";
-            btn.style.borderColor = "#00ff41";
-            btn.style.color = "#00ff41";
-            setTimeout(() => { 
-                btn.innerText = oldText; 
-                btn.style.borderColor = ""; 
-                btn.style.color = ""; 
-            }, 1500);
+            btn.style.borderColor = "#00ff41"; btn.style.color = "#00ff41";
+            setTimeout(() => { btn.innerText = oldText; btn.style.borderColor = ""; btn.style.color = ""; }, 1500);
         }
 
         function removeServer(ip) {
