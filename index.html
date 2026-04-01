@@ -17,12 +17,14 @@
             font-family: 'JetBrains Mono', monospace; 
         }
 
+        /* Estética de Pestañas (Iconos de arriba) */
         .category-btn img { 
             border: 1px solid #333; 
-            filter: grayscale(1) opacity(0.5); 
+            filter: grayscale(1) opacity(0.3); 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             width: 80px; height: 110px; object-fit: cover; border-radius: 8px;
         }
+        .category-btn:hover img { filter: grayscale(0.5) opacity(0.7); border-color: #555; }
         .category-btn.active img { 
             filter: grayscale(0) opacity(1); 
             border: 2px solid var(--accent);
@@ -30,6 +32,7 @@
             transform: translateY(-5px);
         }
 
+        /* Tarjeta de Servidor */
         .server-card {
             background: var(--panel);
             border: 1px solid #2a2c33;
@@ -64,7 +67,6 @@
         }
         .btn-action:hover { background: #333; color: white; }
         
-        /* Animación de rotación para el icono de carga */
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spinning { animation: spin 1s linear infinite; }
 
@@ -84,16 +86,20 @@
 
     <section class="flex gap-4 overflow-x-auto pb-6 no-scrollbar">
         <div onclick="setFilter('cs16')" class="category-btn active text-center flex-shrink-0" id="btn-cs16">
-            <img src="assets/cs16.png">
+            <img src="assets/cs16.png" alt="CS 1.6">
             <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS 1.6</p>
         </div>
         <div onclick="setFilter('csgo')" class="category-btn text-center flex-shrink-0" id="btn-csgo">
-            <img src="assets/csgo.png">
+            <img src="assets/csgo.png" alt="CS:GO">
             <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">CS:GO</p>
         </div>
         <div onclick="setFilter('hl')" class="category-btn text-center flex-shrink-0" id="btn-hl">
-            <img src="assets/hl.jpg">
+            <img src="assets/hl.jpg" alt="Half-Life">
             <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">Half-Life</p>
+        </div>
+        <div onclick="setFilter('tf2')" class="category-btn text-center flex-shrink-0" id="btn-tf2">
+            <img src="assets/tf2.png" alt="TF2">
+            <p class="text-[10px] mt-2 font-bold opacity-50 uppercase">TF2</p>
         </div>
     </section>
 
@@ -123,12 +129,22 @@
         let currentFilter = 'cs16';
         const PROXY_URL = "https://koda-proxy.proyectosapps50.workers.dev/";
 
+        // Objeto centralizado para gestionar las extensiones de imagen correctas
+        const GAME_CONFIG = {
+            'cs16': { ext: 'png' },
+            'csgo': { ext: 'png' },
+            'hl':   { ext: 'jpg' },
+            'tf2':  { ext: 'png' },
+            'default': { ext: 'png' }
+        };
+
         document.addEventListener('DOMContentLoaded', refreshAll);
 
         function setFilter(game) {
             currentFilter = game;
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + game).classList.add('active');
+            const activeBtn = document.getElementById('btn-' + game);
+            if(activeBtn) activeBtn.classList.add('active');
             refreshAll();
         }
 
@@ -150,9 +166,11 @@
             const container = document.getElementById('server-list');
             const refreshIcon = document.getElementById('refresh-icon');
             const allServers = JSON.parse(localStorage.getItem('koda_storage_v5') || '[]');
-            const filtered = allServers.filter(s => s.game === currentFilter);
             
-            // Efecto visual de carga en el botón
+            //  defecto
+            const safeFilter = GAME_CONFIG[currentFilter] ? currentFilter : 'cs16';
+            const filtered = allServers.filter(s => s.game === safeFilter);
+            
             if(refreshIcon) refreshIcon.classList.add('spinning');
             
             container.innerHTML = '';
@@ -162,11 +180,9 @@
                 return;
             }
 
-            // Cargamos todos los servidores filtrados
             const promises = filtered.map(s => renderServerCard(s.ip));
             await Promise.all(promises);
 
-            // Quitamos el efecto de carga
             if(refreshIcon) refreshIcon.classList.remove('spinning');
         }
 
@@ -178,8 +194,9 @@
             card.className = 'server-card p-4 rounded-r-lg flex items-center justify-between';
             container.appendChild(card);
 
-            const ext = (currentFilter === 'hl') ? 'jpg' : 'png';
-            const iconSrc = `assets/${currentFilter}.${ext}`;
+            // centralizado
+            const config = GAME_CONFIG[currentFilter] || GAME_CONFIG.default;
+            const iconSrc = `assets/${currentFilter}.${config.ext}`;
 
             try {
                 const res = await fetch(`${PROXY_URL}?host=${host}&port=${port || 27015}`);
