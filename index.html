@@ -164,7 +164,6 @@
             card.className = 'server-card p-4 rounded-r-lg flex items-center justify-between';
             container.appendChild(card);
 
-            // Determinamos la extensión del icono (hl suele ser jpg en tu repo)
             const ext = (currentFilter === 'hl') ? 'jpg' : 'png';
             const iconSrc = `assets/${currentFilter}.${ext}`;
 
@@ -174,8 +173,11 @@
 
                 if (data.response && data.response.servers && data.response.servers.length > 0) {
                     const s = data.response.servers[0];
+                    
+                    // Extraemos los datos reales que pedías
+                    const nombreServer = s.name || `SVR_${host.split('.')[0]}`;
                     const mapaActual = s.map ? s.map.toUpperCase() : "DESCONOCIDO";
-                    const infoJugadores = s.players !== undefined ? `${s.players}/32` : "ACTIVO";
+                    const infoJugadores = s.players !== undefined ? `${s.players}/${s.max_players || 32}` : "ACTIVO";
 
                     card.classList.add('online');
                     card.innerHTML = `
@@ -186,7 +188,7 @@
                                     <span class="map-badge">${mapaActual}</span>
                                     <span class="text-[10px] text-green-500 font-bold">CONECTADO</span>
                                 </div>
-                                <span class="text-sm font-bold text-white truncate uppercase">SVR_${ipPort.split(':')[0]}</span>
+                                <span class="text-sm font-bold text-white truncate uppercase">${nombreServer}</span>
                                 <div class="flex items-center gap-2 text-[9px] text-gray-500 font-bold">
                                     <span>IP: ${ipPort}</span>
                                     <span class="text-gray-700">•</span>
@@ -199,8 +201,9 @@
                             <button onclick="removeServer('${ipPort}')" class="text-gray-800 p-2 hover:text-red-600">✕</button>
                         </div>
                     `;
-                } else { throw new Error(); }
+                } else { throw new Error("No hay respuesta válida"); }
             } catch (e) {
+                // Si el servidor falla, mostramos una tarjeta amigable de error sin romper la app
                 card.classList.add('offline');
                 card.innerHTML = `
                     <div class="flex items-center gap-4">
@@ -208,6 +211,7 @@
                         <div class="flex flex-col">
                             <span class="text-[10px] text-red-700 font-bold">SEÑAL PERDIDA</span>
                             <span class="text-xs text-gray-600 font-bold">${ipPort}</span>
+                            <span class="text-[9px] text-gray-700 uppercase">Fallo al conectar con el nodo</span>
                         </div>
                     </div>
                     <button onclick="removeServer('${ipPort}')" class="text-gray-800">✕</button>
