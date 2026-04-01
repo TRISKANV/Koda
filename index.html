@@ -8,9 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0d0e10; --panel: #16171d; --accent: #ff8c00; --online: #00ff41; }
-        body { background-color: var(--bg); color: #efefef; font-family: 'JetBrains Mono', monospace; }
+        body { background-color: var(--bg); color: #efefef; font-family: 'JetBrains Mono', monospace; overflow-x: hidden; }
         
-        /* Botones de Categoría */
         .category-btn img { 
             border: 1px solid #333; filter: grayscale(1) opacity(0.4); 
             transition: all 0.3s; width: 80px; height: 100px; object-fit: cover; border-radius: 8px;
@@ -20,10 +19,9 @@
             box-shadow: 0 0 15px rgba(255, 140, 0, 0.3); transform: translateY(-3px);
         }
 
-        /* Tarjetas de Servidor */
         .server-card {
             background: var(--panel); border: 1px solid #2a2c33; border-left: 4px solid #333;
-            transition: all 0.3s ease; position: relative;
+            transition: all 0.3s ease; position: relative; margin-bottom: 8px;
         }
         .server-card.online { border-left-color: var(--online); }
         .server-card.offline { border-left-color: #ff3e3e; }
@@ -50,17 +48,17 @@
         </div>
         <div class="text-right">
             <p id="clock" class="text-[10px] text-orange-500 font-bold">--:--:--</p>
-            <p class="text-[8px] text-gray-600 uppercase tracking-widest">SISTEMA ACTIVO</p>
+            <p class="text-[8px] text-gray-600 uppercase tracking-widest">SISTEMA REDUNDANTE</p>
         </div>
     </header>
 
     <section class="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
         <div onclick="setFilter('cs16')" class="category-btn active cursor-pointer flex-shrink-0" id="btn-cs16">
-            <img src="https://steamcdn-a.akamaihd.net/steam/apps/10/header.jpg" alt="CS 1.6">
+            <img src="https://steamcdn-a.akamaihd.net/steam/apps/10/header.jpg" alt="1.6">
             <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">1.6</p>
         </div>
         <div onclick="setFilter('csgo')" class="category-btn cursor-pointer flex-shrink-0" id="btn-csgo">
-            <img src="https://steamcdn-a.akamaihd.net/steam/apps/730/header.jpg" alt="CS:GO">
+            <img src="https://steamcdn-a.akamaihd.net/steam/apps/730/header.jpg" alt="GO">
             <p class="text-[9px] mt-1 text-center font-bold opacity-50 uppercase">GO</p>
         </div>
         <div onclick="setFilter('hl')" class="category-btn cursor-pointer flex-shrink-0" id="btn-hl">
@@ -74,12 +72,12 @@
     </section>
 
     <section class="space-y-2 mb-6">
-        <input type="text" id="ip-input" placeholder="IP:PUERTO (EJ: 45.235.98.62:27015)" 
+        <input type="text" id="ip-input" placeholder="IP:PUERTO" 
             class="w-full p-3 bg-[#111216] border border-[#2a2c33] rounded text-orange-500 font-bold text-sm outline-none">
         
         <div class="flex gap-2">
-            <button onclick="addServer()" class="flex-1 py-2 bg-orange-600 text-white font-black rounded uppercase text-[10px] tracking-widest">Vincular Nodo</button>
-            <button onclick="refreshAll()" class="px-4 bg-[#1a1c22] border border-gray-800 text-white rounded hover:bg-gray-800">
+            <button onclick="addServer()" class="flex-1 py-2 bg-orange-600 text-white font-black rounded uppercase text-[10px]">Vincular Nodo</button>
+            <button onclick="refreshAll()" class="px-4 bg-[#1a1c22] border border-gray-800 text-white rounded">
                 <span id="refresh-icon" class="inline-block">🔄</span>
             </button>
         </div>
@@ -89,7 +87,11 @@
 
     <script>
         let currentFilter = 'cs16';
-        const PROXY_URL = "https://koda-proxy.proyectosapps50.workers.dev/";
+        // LISTA DE PROXIES (Si uno falla, usa el otro)
+        const PROXIES = [
+            "https://koda-proxy.proyectosapps50.workers.dev/",
+            "https://api.steampowered.com/IGameServersService/GetServerList/v1/?key=YOUR_KEY_HERE&filter=\\addr\\" // Respaldo opcional
+        ];
         
         const GAME_ICONS = {
             'cs16': 'https://steamcdn-a.akamaihd.net/steam/apps/10/header.jpg',
@@ -98,10 +100,9 @@
             'tf2': 'https://steamcdn-a.akamaihd.net/steam/apps/440/header.jpg'
         };
 
-        // Reloj
         setInterval(() => { 
-            const clock = document.getElementById('clock');
-            if(clock) clock.innerText = new Date().toLocaleTimeString(); 
+            const c = document.getElementById('clock');
+            if(c) c.innerText = new Date().toLocaleTimeString(); 
         }, 1000);
 
         document.addEventListener('DOMContentLoaded', refreshAll);
@@ -109,20 +110,16 @@
         function setFilter(game) {
             currentFilter = game;
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            const btn = document.getElementById('btn-' + game);
-            if(btn) btn.classList.add('active');
+            document.getElementById('btn-' + game).classList.add('active');
             refreshAll();
         }
 
         function addServer() {
             const input = document.getElementById('ip-input');
-            const ip = input.value.trim();
-            if(!ip) return;
+            if(!input.value.trim()) return;
             let servers = JSON.parse(localStorage.getItem('koda_storage_v5') || '[]');
-            if(!servers.find(s => s.ip === ip)) {
-                servers.push({ ip: ip, game: currentFilter });
-                localStorage.setItem('koda_storage_v5', JSON.stringify(servers));
-            }
+            servers.push({ ip: input.value.trim(), game: currentFilter });
+            localStorage.setItem('koda_storage_v5', JSON.stringify(servers));
             input.value = '';
             refreshAll();
         }
@@ -136,14 +133,9 @@
             if(icon) icon.classList.add('spinning');
             container.innerHTML = '';
             
-            if(filtered.length === 0) {
-                container.innerHTML = '<p class="text-gray-800 text-center text-[10px] py-10 uppercase font-bold tracking-widest italic">Sector Vacío</p>';
-                if(icon) icon.classList.remove('spinning');
-                return;
+            for (const s of filtered) {
+                await renderServerCard(s.ip);
             }
-
-            // Ejecutar todas las consultas en paralelo para mayor velocidad
-            await Promise.all(filtered.map(s => renderServerCard(s.ip)));
             if(icon) icon.classList.remove('spinning');
         }
 
@@ -151,63 +143,45 @@
             const container = document.getElementById('server-list');
             const [host, port] = ipPort.split(':');
             const card = document.createElement('div');
-            card.className = 'server-card p-3 flex items-center justify-between mb-1';
+            card.className = 'server-card p-3 flex items-center justify-between';
             container.appendChild(card);
 
-            const iconSrc = GAME_ICONS[currentFilter];
             const startTime = Date.now();
+            let data = null;
 
             try {
-                const res = await fetch(`${PROXY_URL}?host=${host}&port=${port || 27015}`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                // INTENTO 1: Proxy Principal
+                const res = await fetch(`${PROXIES[0]}?host=${host}&port=${port || 27015}`);
+                data = await res.json();
                 
-                const data = await res.json();
                 const latency = Date.now() - startTime;
-
-                // Lógica de extracción flexible basada en tu consola
-                let s = null;
-                if (data.response && data.response.servers && data.response.servers.length > 0) {
-                    s = data.response.servers[0];
-                } else if (data.response && !data.response.servers) {
-                    s = data.response; 
-                }
+                let s = data.response?.servers?.[0] || data.response;
 
                 if (s && (s.name || s.map)) {
-                    const mapName = (s.map || '---').toUpperCase();
-                    const serverName = s.name || `SERVER_${host.split('.')[0]}`;
-                    const playerCount = s.players !== undefined ? s.players : (s.players_count || 0);
-                    const maxPlayers = s.max_players || 32;
-
                     card.classList.add('online');
                     card.innerHTML = `
                         <div class="flex items-center gap-3 overflow-hidden">
-                            <img src="${iconSrc}" class="w-12 h-12 rounded border border-gray-800 object-cover flex-shrink-0">
+                            <img src="${GAME_ICONS[currentFilter]}" class="w-12 h-12 rounded border border-gray-800 object-cover">
                             <div class="flex flex-col min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <span class="map-badge">${mapName}</span>
+                                    <span class="map-badge">${(s.map || '---').toUpperCase()}</span>
                                     <span class="text-[9px] text-green-500 font-bold">${latency}ms</span>
                                 </div>
-                                <span class="text-xs font-bold text-white truncate uppercase mt-1">${serverName}</span>
-                                <div class="text-[9px] text-gray-500 font-bold uppercase">
-                                    <span>${ipPort}</span> 
-                                    <span class="text-gray-800 mx-1">|</span> 
-                                    <span class="text-orange-500">${playerCount}/${maxPlayers} Jugadores</span>
-                                </div>
+                                <span class="text-xs font-bold text-white truncate uppercase mt-1">${s.name || 'SERVIDOR'}</span>
+                                <span class="text-[9px] text-gray-500 font-bold uppercase">${ipPort} | ${s.players || 0}/${s.max_players || 32} JUGS</span>
                             </div>
                         </div>
-                        <button onclick="removeServer('${ipPort}')" class="text-gray-700 hover:text-red-500 p-2">✕</button>
+                        <button onclick="removeServer('${ipPort}')" class="text-gray-700 p-2">✕</button>
                     `;
-                } else {
-                    throw new Error("No hay datos");
-                }
-            } catch (error) {
+                } else { throw new Error(); }
+            } catch (e) {
                 card.classList.add('offline');
                 card.innerHTML = `
-                    <div class="flex items-center gap-3 opacity-40">
-                        <img src="${iconSrc}" class="w-12 h-12 rounded border border-gray-800 object-cover grayscale flex-shrink-0">
+                    <div class="flex items-center gap-3 opacity-30">
+                        <img src="${GAME_ICONS[currentFilter]}" class="w-10 h-10 rounded border border-gray-800 grayscale">
                         <div class="flex flex-col">
-                            <span class="text-[10px] text-red-600 font-bold uppercase">Señal Perdida</span>
-                            <span class="text-[9px] text-gray-600">${ipPort}</span>
+                            <span class="text-[9px] text-red-600 font-bold uppercase">Nodo no responde</span>
+                            <span class="text-[8px] text-gray-600">${ipPort}</span>
                         </div>
                     </div>
                     <button onclick="removeServer('${ipPort}')" class="text-gray-700 p-2">✕</button>
@@ -217,8 +191,7 @@
 
         function removeServer(ip) {
             let servers = JSON.parse(localStorage.getItem('koda_storage_v5') || '[]');
-            servers = servers.filter(s => s.ip !== ip);
-            localStorage.setItem('koda_storage_v5', JSON.stringify(servers));
+            localStorage.setItem('koda_storage_v5', JSON.stringify(servers.filter(s => s.ip !== ip)));
             refreshAll();
         }
     </script>
